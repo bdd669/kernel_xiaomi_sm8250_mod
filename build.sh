@@ -130,6 +130,14 @@ if [ $KSU_ENABLE -eq 1 ]; then
     # 导致检测软件误报 su 存在（详见 patch_sucompat.py）。补丁幂等，锚点失配即失败。
     echo "Hardening sucompat faccessat path..."
     python3 patch_sucompat.py KernelSU/kernel/feature/sucompat.c
+
+    # Kept SUSFS off (v4.2.0-rc3 lacks PR #637), but FuXue's tree still calls two SUSFS hide hooks
+    # in fs/read_write.c and drivers/input/input.c. They reference ksu_is_*_hook_enabled, which only
+    # exists with CONFIG_KSU_SUSFS=y, so the link fails with "undefined reference". Neutralize them.
+    sed -i 's/static_branch_unlikely(&ksu_is_init_rc_hook_enabled)/0/' fs/read_write.c
+    sed -i 's/static_branch_unlikely(&ksu_is_input_hook_enabled)/0/' drivers/input/input.c
+    grep -n 'ksu_is_init_rc_hook_enabled' fs/read_write.c drivers/input/input.c
+    grep -n 'ksu_is_input_hook_enabled' drivers/input/input.c
 else
     echo "KSU is disabled"
 fi
