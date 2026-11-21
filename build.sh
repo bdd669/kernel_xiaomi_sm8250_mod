@@ -150,10 +150,7 @@ rm -rf anykernel/
 
 echo "Clone AnyKernel3 for packing kernel (repo: https://github.com/liyafe1997/AnyKernel3)"
 git clone https://github.com/liyafe1997/AnyKernel3 -b kona --single-branch --depth=1 anykernel
-# Disable dm-verity so the MIUI port stops showing "internal problem with your device" on boot.
-# patch_cmdline is provided by AnyKernel3's ak3-core.sh; it appends or replaces the entry.
-sed -i '/^flash_boot;/i patch_cmdline androidboot.veritymode androidboot.veritymode=disabled' anykernel/anykernel.sh
-grep -n "patch_cmdline" anykernel/anykernel.sh || { echo "verity patch injection FAILED"; exit 1; }
+# verity patch removed: the boot dialog comes from VINTF, not dm-verity.
 
 # Add date to local version
 local_version_str="-perf"
